@@ -1,45 +1,97 @@
 ﻿using System;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Net;
 using System.Reflection;
 
 namespace InAppUpdate
 {
     public class AssemblyResolver
     {
-        public static void Resolve()
+        private static readonly string _basePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Personal), "Modules");
+        private static readonly string _tempPath = Path.Combine(Path.GetTempPath(), "Modules");
+
+        public static void Init()
         {
-            var tempFilePath = Path.Combine(Path.GetTempPath(), "AppModule.dll");
-            using (var client = new WebClient())
+            AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
+
+            if (!Directory.Exists(_basePath))
+                Directory.CreateDirectory(_basePath);
+        }
+
+        private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
+        {
+            var embeddedAssembly = new AssemblyName(args.Name);
+            var moduleName = $"{embeddedAssembly.Name}.dll";
+            var dllLocalPath = ResolveAssembly(moduleName);
+
+            if (string.IsNullOrWhiteSpace(dllLocalPath))
+                return null;
+
+            if (!File.Exists(dllLocalPath))
+                return null;
+
+            try
             {
-                //Download da dll no github
-                client.DownloadFile("https://github.com/felipebaltazar/felipebaltazar/blob/output/AppModule.dll?raw=true", tempFilePath);
+                return Assembly.LoadFrom(dllLocalPath);
+
+            }
+            catch (BadImageFormatException e)
+            {
+                Console.WriteLine("Unable to load {0}.", dllLocalPath);
+                Console.WriteLine(e.Message.Substring(0,
+                                  e.Message.IndexOf(".") + 1));
+
+                //Caso corrompa a dll no download, pegamos uma versao estavel embarcada
+                try
+                {
+                    var localDllFile = Path.Combine(_basePath, moduleName);
+                    UnpackEmbeddedReference(moduleName, dllLocalPath, true);
+                    return Assembly.LoadFrom(dllLocalPath);
+                }
+                catch (BadImageFormatException ex)
+                {
+                    Console.WriteLine("Unable to load {0}.", dllLocalPath);
+                    Console.WriteLine(ex.Message.Substring(0,
+                                      ex.Message.IndexOf(".") + 1));
+                }
             }
 
-            // Verifica se baixou corretamente
-            if (!File.Exists(tempFilePath))
-                return;
+            return null;
+        }
 
-            // Busca o assembly carregado atualmente
-            var assembly = AppDomain.CurrentDomain
-                                    .GetAssemblies()
-                                    .FirstOrDefault(a => a.GetName().Name == "AppModule");
+        private static string ResolveAssembly(string moduleName)
+        {
+            // Se existir versão mais nova baixada, usa ela
+            var tempLocalDll = Path.Combine(_tempPath, moduleName);
+            var localDllFile = Path.Combine(_basePath, moduleName);
+            if (File.Exists(tempLocalDll))
+                File.Copy(tempLocalDll, localDllFile, true);
 
-            // Utiliza a localização do assembly carregado atualmente
-            var filePath = assembly.Location;
+            if (File.Exists(localDllFile))
+                return localDllFile;
 
-            // Busca a versão das dlls (nova e atual)
-            var newAssembly = FileVersionInfo.GetVersionInfo(tempFilePath)?.FileVersion ?? "1.0.0.0";
-            var currentAssembly = FileVersionInfo.GetVersionInfo(filePath)?.FileVersion ?? "1.0.0.0";
+            // Caso contrário usa a versão embarcada
+            UnpackEmbeddedReference(moduleName, localDllFile);
 
-            // Compara se a versão é a mesma
-            if (!(new Version(currentAssembly) < new Version(newAssembly)))
-                return;
+            return localDllFile;
+        }
 
-            // Sobreescreve uma dll antiga
-            File.Copy(tempFilePath, filePath, true);
+        public static void UnpackEmbeddedReference(string moduleName, string localDllFile, bool deleteIfExists = false)
+        {
+            var aplication = Assembly.GetExecutingAssembly().GetName().Name;
+            var resourceName = $"{aplication.Replace(" ", "_")}.Modules.{moduleName}";
+            using (var embedded = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName))
+            {
+                if (embedded is null)
+                    return;
+
+                if (deleteIfExists && File.Exists(localDllFile))
+                    File.Delete(localDllFile);
+
+                using (var fileStream = File.Create(localDllFile))
+                {
+                    embedded.CopyTo(fileStream);
+                }
+            }
         }
     }
 }

@@ -2,9 +2,11 @@
 <ContentView xmlns="http://xamarin.com/schemas/2014/forms" 
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="AppModule.MyView">
-  <ContentView.Content>
-      <StackLayout>
-          <Label Text="reopen this app to see the changes.." />
-      </StackLayout>
-  </ContentView.Content>
+    <ContentView.Content>
+        <StackLayout>
+            
+            <Label x:Name="label" Text="Você esta vendo uuma versão desatualizada dessa view, clique no botão abaixo para atualizar"/>
+            <Button x:Name="button" Text="Baixar versão mais recente" Clicked="button_Clicked"/>
+        </StackLayout>
+    </ContentView.Content>
 </ContentView>

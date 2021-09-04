@@ -2,10 +2,12 @@
 <ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="InAppUpdate.Page1"
-             xmlns:module="clr-namespace:AppModule;assembly=AppModule">
+             xmlns:local="clr-namespace:InAppUpdate">
     <ContentPage.Content>
         <StackLayout>
-            <module:MyView/>
+            <local:ModuleView ModuleViewName="AppModule.MyView, AppModule"
+                              VerticalOptions="FillAndExpand"
+                              HorizontalOptions="FillAndExpand"/>
         </StackLayout>
     </ContentPage.Content>
 </ContentPage>
