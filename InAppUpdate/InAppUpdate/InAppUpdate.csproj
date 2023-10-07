@@ -11,16 +11,18 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Modules\AppModule.dll" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="Modules\AppModule.dll" />
+    <Compile Remove="Modules\**" />
+    <EmbeddedResource Remove="Modules\**" />
+    <None Remove="Modules\**" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Xamarin.Forms" Version="5.0.0.2012" />
     <PackageReference Include="Xamarin.Essentials" Version="1.6.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\AppModule\AppModule.csproj" />
   </ItemGroup>
 
   <ItemGroup>

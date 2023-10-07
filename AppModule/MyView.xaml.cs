@@ -10,7 +10,7 @@ namespace AppModule
 {
     public partial class MyView : ContentView
     {
-        private static readonly string _basePath = Path.Combine(Path.GetTempPath(), "Modules");
+        private static readonly string _basePath = Path.Combine(Path.GetTempPath());
 
         public MyView()
         {

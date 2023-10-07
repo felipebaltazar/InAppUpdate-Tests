@@ -1,12 +1,15 @@
-﻿<?xml version="1.0" encoding="UTF-8"?>
-<ContentView xmlns="http://xamarin.com/schemas/2014/forms" 
-             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="AppModule.MyView">
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<ContentView
+    x:Class="AppModule.MyView"
+    xmlns="http://xamarin.com/schemas/2014/forms"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
     <ContentView.Content>
         <StackLayout>
-            
-            <Label x:Name="label" Text="Você esta vendo uuma versão desatualizada dessa view, clique no botão abaixo para atualizar"/>
-            <Button x:Name="button" Text="Baixar versão mais recente" Clicked="button_Clicked"/>
+            <Label x:Name="label" Text="Você esta vendo uma versão desatualizada dessa view, clique no botão abaixo para atualizar" />
+            <Button
+                x:Name="button"
+                Clicked="button_Clicked"
+                Text="Baixar versão mais recente" />
         </StackLayout>
     </ContentView.Content>
 </ContentView>
